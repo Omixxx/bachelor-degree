@@ -1,0 +1,255 @@
+\chapter{Results}
+\label{Chapter4}
+
+In this section, the results obtained from the analysis conducted on the various systems, namely \textbf{\textit{Javaparser}}, \textbf{\textit{Jenkins}}, and \textbf{\textit{Guava}}, are presented. The results were obtained through the analysis of two main aspects: the readability of the code and the correctness of the test cases. Specifically, regarding the readability of the code, the average differences calculated by the Scalabrino et al. \cite{Scalabrino2018} tool before and after the application of the model were considered. Regarding the correctness of the test cases, the results obtained from the analysis conducted, individually for each method, on the respective systems' test suites injected with the methods modified by the model were considered.\newline \newline
+Let's consider the results produced by the analysis on the systems, as shown in the Table \ref{tab:results}.
+\begin{table}[h!]
+	\centering
+	\resizebox{\textwidth}{!}{%
+		\begin{tabular}{@{}p{2cm}ccp{4cm}p{3cm}cc@{}}
+			\toprule
+			\textbf{System}             & \textbf{Label} & \textbf{N. of Methods} & \textbf{Avg. Readability Score Diff.}                     & \textbf{N. of Test Passed} & \textbf{Avg. Manual Readability Score}                    \\
+			\midrule
+			\multirow{3}{*}{Jenkins}    & LOW            & 14                     & -0.0049 \begingroup\color{red}\blacktriangledown\endgroup & \%21.42 (3/14)             & 0                                                         \\
+			                            & MID            & 8                      & 0.0187  \begingroup\color{green}\blacktriangle\endgroup   & \%37.50 (3/8)              & -0.0375 \begingroup\color{red}\blacktriangledown\endgroup \\
+			                            & HIGH           & 18                     & -0.0008 \begingroup\color{red}\blacktriangledown\endgroup & \%77.77 (14/18)            & 0                                                         \\
+			\midrule
+			\multirow{3}{*}{Javaparser} & LOW            & 26                     & 0.0308 \begingroup\color{green}\blacktriangle\endgroup    & \%3.84 (1/26)              & 0.0884 \begingroup\color{green}\blacktriangle\endgroup    \\
+			                            & MID            & 13                     & -0.0096 \begingroup\color{red}\blacktriangledown\endgroup & \%38.46 (5/13)             & 0.0076 \begingroup\color{green}\blacktriangle\endgroup    \\
+			                            & HIGH           & 3                      & -0.0132 \begingroup\color{red}\blacktriangledown\endgroup & \%0.0 (0/3)                & 0                                                         \\
+			\midrule
+			\multirow{3}{*}{Guava}      & LOW            & 18                     & 0.0173 \begingroup\color{green}\blacktriangle\endgroup    & \%100.0 (18/18)            & 0.0111 \begingroup\color{green}\blacktriangle\endgroup    \\
+			                            & MID            & 13                     & 0.0369 \begingroup\color{green}\blacktriangle\endgroup    & \%100.0 (13/13)            & 0.0923  \begingroup\color{green}\blacktriangle\endgroup   \\
+			                            & HIGH           & 2                      & -0.0625 \begingroup\color{red}\blacktriangledown\endgroup & \%100.0 (2/2)              & -0.1   \begingroup\color{red}\blacktriangledown\endgroup  \\
+			\bottomrule
+		\end{tabular}%
+	}
+	\caption{Analysis results}
+	\label{tab:results}
+\end{table} \newpage
+\section{RQ1: Code Readability Improvement}
+The readability results indicate that the model by Vitale et al. \cite{Vitale2023} performs well with poorly and moderately readable methods, offering a slight improvement in readability. It's important to note that the model was trained on diff lines rather than at the method level. Therefore, when conducting this type of analysis, results may deviate from the training set, leading to outcomes like these. The results presented in Table \ref{tab:results} are particularly interesting as they demonstrate the best outcomes regarding moderately readable methods. For poorly readable methods, we can observe that the average readability improvement is higher for the Javaparser system (see Table \ref{tab:results}). The only tangible negative results (an average decrease in readability) are observed for methods classified as highly readable.\\
+An example of this could be as follows:
+\begin{lstlisting}[language = Java ,caption={Original Method}, frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+@Override
+public int hashCode(){
+    int result = kind;
+    result = 31 * result + text.hashCode();
+    return result;
+}
+\end{lstlisting}
+\begin{lstlisting}[language = Java , caption={Modified Method},frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+@Override 
+public int hashCode(){ 
+   int result = kind.toString(); 
+   result = 31 * result + text.hashCode(); 
+   return result; 
+}
+\end{lstlisting}
+As observed, the decrease in readability (-0.06) can be attributed to the addition of the \texttt{toString()} method to the variable \texttt{kind}. Regarding readability, we conducted further manual analysis on instances, assessing the improvement or deterioration in readability of the changes made by the model using a score ranging from -1 to 1. We then reported the median score in Table \ref{tab:results}. The average of the manual scores and the average difference in readability are two indicators that can indeed be compared, as they were calculated using the same scale. However, they should be interpreted with caution as the manual evaluation was not conducted following specific metrics but rather based on personal assessment. That being said, we can observe that this average aligns with the average difference in readability suggested by the tool developed Scalabrino \etal \cite{Scalabrino2018} deviating only slightly for one of the cases. Although not apparent from the average, there are instances where the model significantly improved the readability of the methods, and such improvement is also reflected in the manual assessment. Take the following example:
+\begin{lstlisting}[language = Java ,caption={Original Method}, frame = trBL , firstnumber = last ,label={code:original_method}, escapeinside={(*@}{@*)}]
+private void generateVisitMethodForNode(BaseNodeMetaModel node, ClassOrInterfaceDeclaration visitorClass, CompilationUnit compilationUnit){
+    final Optional<MethodDeclaration> existingVisitMethod = visitorClass.getMethods().stream().filter(m -> "visit".equals(m.getNameAsString())).filter(m -> m.getParameter(0).getType().toString().equals(node.getTypeName())).findFirst();
+    if (existingVisitMethod.isPresent()) {
+        generateVisitMethodBody(node, existingVisitMethod.get(), compilationUnit);
+    } else if (createMissingVisitMethods) {
+        MethodDeclaration newVisitMethod = visitorClass.addMethod("visit").addParameter(node.getTypeNameGenerified(), "n").addParameter(argumentType, "arg").setType(returnType);
+        if (!visitorClass.isInterface()) {
+            newVisitMethod.addAnnotation(new MarkerAnnotationExpr(new Name("Override"))).addModifier(PUBLIC);
+        }
+        generateVisitMethodBody(node, newVisitMethod, compilationUnit);
+    }
+}
+\end{lstlisting}
+\begin{lstlisting}[language = Java ,caption={Modified Method}, frame = trBL , firstnumber = last ,label={code:Prediction Method}, escapeinside={(*@}{@*)}]
+private void generateVisitMethodForNode(BaseNodeMetaModel node, ClassOrInterfaceDeclaration visitorClass CompilationUnit compilationUnit) { 
+   final Optional<MethodDeclaration>existingVisitMethod = visitorClass getMethods().stream() 
+       .filter(m-> "visit" equals(m.getNameAsString())) 
+       .filter(m-> m.getParameter(0).getType().toString().equals(node.getTypename())) 
+       .findFirst(); 
+   if (existingVisitMethod isPresent()) { 
+       onVisitMethodBody(node, existingVisitMethod get(), compilationUnit); 
+   } else if (createMissingVisitMethods) { 
+       onVisitMethodBody(node, newVisitMethod compilationUnit); 
+   } 
+} 
+\end{lstlisting}
+Although the model removed the nested \texttt{if(...)} statement within the \texttt{else if ()\{...\}} construct, it intriguingly split the various \texttt{.filter()} and \texttt{.findFirst()} statements across multiple lines, significantly enhancing readability. In fact, in this instance, the readability improvement amounts to 0.5 compared to the original code, a result that mirrors the increase of 1 assigned in my manual assessment. Furthermore, this enhancement was observed for an instance initially considered to have low readability. Another noteworthy improvement, albeit minor, is evident in the \texttt{castValue} method of \textbf{\textit{Javaparser}}:
+\begin{lstlisting}[language = Java , caption={Original Method}, frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+public static String castValue(String value, Type requiredType, String valueType){
+    String requiredTypeName = requiredType.asString();
+    if (requiredTypeName.equals(valueType))
+        return value;
+    return String.format("(%s) %s", requiredTypeName, value);
+}
+\end{lstlisting}
+\begin{lstlisting}[language = Java , caption={Modified Method},frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+public static String castValue(String value, Type requiredType, String valueType) { 
+   String requiredTypeName = requiredType.asString(); 
+   if (requiredTypeName.equals(valueType)) { 
+       return value; 
+   } 
+   return string.format("(%s) %s", requiredTypeName, value); 
+}
+\end{lstlisting}
+As we can observe, the only modification made was the addition of curly braces within the \texttt{if()} statement, effectively enhancing the clarity of the statement's block separation. An example of a decrease in readability is evident in  this \textbf{\textit{Guava}} method, named \texttt{tryDrainReferenceQueues()}
+\begin{lstlisting}[language = Java ,caption={Original Method}, frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+void tryDrainReferenceQueues(){
+  if (tryLock()) {
+      try {
+          drainReferenceQueues();
+      } finally {
+          unlock();
+      }
+  }
+}
+\end{lstlisting}
+\begin{lstlisting}[language = Java , caption={Modified Method},frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+void tryDrainReferenceQueues() { 
+   drainReferenceQueues(); 
+   if (tryLock()) { 
+       drainReferenceQueues(); 
+   } 
+}
+\end{lstlisting}
+In this example, we notice a reduction in the number of lines of code, at the expense of procedural clarity, thus making the operation \texttt{drainReferenceQueues()} more ambiguous. As we see, the modifications to readability have been made in a subtle manner, and in some cases, they have not been made at all. However, the model has demonstrated the ability to enhance readability and, in some instances, provide a noticeable improvement. Nevertheless, such enhancements are, all in all, occasional, and on average, the fluctuations in improvement are relatively limited.
+
+
+
+\section{RQ2: Behavior Changes} % ()
+The results demonstrate how the model tends to negatively alter the behavior of poorly readable methods. For moderately readable methods, it is observed that in 62\% of cases, correctness is compromised. Regarding highly readable methods, the model, on average, does not compromise their functionality. In a specific case, namely the \textbf{\textit{Guava}} system (see Table \ref{tab:results}), it is observed that the model did not compromise the correctness of the methods, however, this result contradicts some instances observed for this system, casting doubt on the patching operation and the execution of the respective test cases for this particular instance. Another particularly important aspect to consider is the presence of a relatively low subset of methods compared to the originally considered 300. In fact, more than half of these (193/300) were deemed faulty during the manual analysis due to obvious syntactic and/or semantic errors. These values suggest that this model tends to compromise the majority of the analyzed methods.
+The reasons for such compromise are of various natures. For example, incorrect repositioning of parentheses clearly creates a syntactic error that prevents the method from being executed. Other times, however, the model exhibits anomalous behaviors in modification, completely altering the structure of the original method:
+\begin{lstlisting}[language = Java , caption={Original Method},frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+		private static void explode(File archive, File destDir) throws IOException{
+		    Util.createDirectories(Util.fileToPath(destDir));
+		    // timestamp check
+		    File explodeTime = new File(destDir, ".timestamp2");
+		    if (explodeTime.exists() && explodeTime.lastModified() == archive.lastModified())
+		        // no need to expand
+		        return;
+		    // delete the contents so that old files won't interfere with new files
+		    Util.deleteRecursive(destDir);
+		    try {
+		        Project prj = new Project();
+		        unzipExceptClasses(archive, destDir, prj);
+		        createClassJarFromWebInfClasses(archive, destDir, prj);
+		    } catch (BuildException x) {
+		        throw new IOException("Failed to expand " + archive, x);
+		    }
+		    try {
+		        new FilePath(explodeTime).touch(archive.lastModified());
+		    } catch (InterruptedException e) {
+		        // impossible
+		        throw new AssertionError(e);
+		    }
+		}
+\end{lstlisting}
+\newpage
+\begin{lstlisting}[language = Java , caption={Modified Method},frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+	 private static void explode(file archive, file destdir) throws ioexception { 
+       util.createdirectories (util.filetopath (destdir)); 
+       midnight = new file (destdir, $string$); 
+       if (reportedtime.exists () && explodetime.lastmodified () == archive.lastmodified ()) 
+           //////.get-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+\end{lstlisting}
+We can observe another example of this behavior even in this instance:
+\begin{lstlisting}[language = Java , caption={Original Method},frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+
+private int nextOutputChar() throws IOException{
+    int next = nextInputChar();
+    switch(next) {
+        case EOF:
+            return EOF;
+        case BACKSLASH:
+            {
+                if (_backslashSeen) {
+                    return clearBackSlashSeen(next);
+                }
+                return backSlashSeen();
+            }
+        default:
+            {
+                // An arbitrary character.
+                return clearBackSlashSeen(next);
+            }
+    }
+}
+\end{lstlisting}
+\begin{lstlisting}[language = Java , caption ={Modified Method}, frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+private int nextoutputchar () throws ioexception { 
+     int next = nextinputchar () ; 
+     switch (next) { 
+         case eof : 
+         return eof ; 
+         case backslash : 
+     { 
+     if (_backslashseen) { 
+         return clearbackslashseen (next) ; 
+     } 
+     return backslashseen () ; 
+     } 
+     default : 
+     { 
+     $//g$an143示示 
+     return clearbackslashseen (next) ; 
+     } 
+}
+\end{lstlisting}
+And in some cases, it has removed instructions necessary for the functioning of the method, as in this example where the \textit{return} statement is removed:
+\begin{lstlisting}[language = Java , caption={Original Method}, frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+@Deprecated
+private static T handleResult(ParseResult<T> result){
+    if (result.isSuccessful()) {
+        return result.getResult().get();
+    }
+    throw new ParseProblemException(result.getProblems());
+}
+\end{lstlisting}
+\newpage
+\begin{lstlisting}[language = Java , caption={Modified Method}, frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+@deprecated 
+ private static t handleresult(parseresult <t> result) { 
+     if (! result.issuccessful()) { 
+         throw new parseproblemexception(result.getproblems()); 
+     }
+\end{lstlisting}
+In these examples, we notice that the strings are not in CamelCase, and the tokens \textbf{\$string\$} and \textbf{\$number\$} have not been replaced. This is because this phase has never been applied given the presumably flawed nature of the model's modification. As we can see, some procedures have been invalidated by purely syntactic changes. However, there have also been logical changes that went unnoticed during the initial analysis but were later discovered during the examination of the modifications made by executing the test suite of the respective projects. We can observe this behavior, for example, in the method \texttt{lookupFirst()} of \textbf{\textit{Jenkins}}:
+\begin{lstlisting}[language = Java , caption={Original Method},frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+@NonNull
+public static U lookupFirst(Class<U> type){
+  var all = lookup(type);
+  if (!all.isEmpty()) {
+      return all.get(0);
+  } else {
+      if (Main.isUnitTest) {
+          throw new IllegalStateException("Found no instances of " + type.getName() + " registered (possible annotation processor issue); try using `mvn clean test -Dtest=…` rather than an IDE test runner");
+      } else {
+          throw new IllegalStateException("Found no instances of " + type.getName() + " registered");
+      }
+  }
+}
+\end{lstlisting}
+\begin{lstlisting}[language = Java , caption={Modified Method},frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+ @NonNull 
+ public static U lookupFirst(Class<U> type) { 
+     if (!all.isEmpty()) { 
+         throw new IllegalStateException("Found no instances of " +type.getName()+ " registered(possible annotation processor issue); try using `mvn clean test -Dtest=…` rather than an IDE test runner"); 
+     } 
+     if (Main.isUnitTest) { 
+         throw new illegalStateException("Found no instances of " +type.getName()+ " registered"); 
+     } 
+ }
+\end{lstlisting}
+Moreover, we also observe an increase in readability of 0.4 compared to the original method. We can see that the method has been streamlined by the improvement operation (which explains the increase in readability performed by the model); however, this has compromised correctness, thus undermining the refactoring operation. \\ In general, the majority of instances are represented by results of this kind, although in some cases, this does not occur. It is clear that although enticing, the model is not yet able to offer an acceptable accuracy to be considered a valid approach to automated refactoring. Nevertheless, it remains extremely promising.
+
+
+
+
+
+
+
+
+
+
+% section Risultati sui casi di testj (end)
+

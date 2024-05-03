@@ -1,0 +1,31 @@
+\chapter{Introduction}
+\label{Chapter1}
+
+\section{Application Context}
+In the context of software systems evolution, it is universally recognized that adopting code maintenance practices is essential to mitigate the intrinsic technical debt in software development. This debt encompasses costs that accrue during the development process, such as writing unreadable code, lack of documentation, and the presence of duplicate, unused, or untested elements, all of which inevitably contribute to software degradation over time. Technical debt poses a challenge as it slows down the development process, leading to increased costs for companies. Over time, as Besker \etal \cite{Besker2018} shows the release of new features experiences a slowdown concurrently with the increase in technical debt; As pointed out by Rios \etal \cite{Rios2018} study on technical debt, this can lead to experience financial losses. To counteract this phenomenon and ensure greater software longevity, it is common practice to employ refactoring techniques. Refactoring involves modifying the source code to improve readability, maintainability, and comprehensibility. Unreadable code exhibits various characteristics, including excessively long procedures/classes, redundant or unclear comments, lack of documentation, and the use of so-called "magic numbers," along with the presence of unused code. Refactoring, therefore, plays a fundamental role in software systems evolution, and the automation of this activity represents an active area of research. The goal is to make these refactoring practices automatic since refactoring is a lengthy and meticulous activity, often difficult to execute correctly due to the need to deeply understand the source code. Readability thus emerges as a fundamental yet often overlooked aspect underlying proper refactoring and, consequently, the correct evolution of the software system.
+
+\section{Motivation and Objectives}
+Several studies have emphasized the critical role of code readability in software maintenance. While acknowledging the multifaceted and subjective nature of code readability, it is widely accepted that easily understandable code facilitates comprehension, modification, and maintenance. Some research has proposed metrics to evaluate code readability, while others have focused solely on specific aspects of automated readability improvement, such as variable naming. However, only recently a study has been proposed aiming to use machine learning models to holistically improve code readability. This cutting\-edge study has spurred us to undertake this experimental thesis, as it is the first time that there is a proposal to concretely examine the potential of deep learning models in enhancing code readability within extensive projects. Our experimental thesis aims to evaluate the impact of using deep learning models on code readability and, consequently, on the overall software development experience.
+With this in mind, we have formulated the following research questions to guide our investigation:
+
+
+\begin{flushleft}
+	\fcolorbox{gray!20}{gray!20}{\begin{varwidth}{\dimexpr\textwidth-2\fboxsep-2\fboxrule\relax}
+			$\mathbf{RQ1}$: \emph{What is the impact of applying automatic code readability enhancement considering snippets with varying levels of readability, namely low, medium, and high?}
+		\end{varwidth}}
+\end{flushleft}
+With this question, we aim to understand how the model performs in different contexts (low, medium, high readability) and therefore determine if and especially in which context it excels in improving code readability.
+
+\begin{flushleft}
+	\fcolorbox{gray!20}{gray!20}{\begin{varwidth}{\dimexpr\textwidth-2\fboxsep-2\fboxrule\relax}
+			$\mathbf{RQ2}$: \emph{Does readability enhancement through deep learning models change code behavior?}
+		\end{varwidth}}
+\end{flushleft}
+Here, we are interested in understanding whether the model, by improving code readability, can alter the behavior of the code itself. This is a critical aspect because any modification to the source code could potentially introduce errors or undesired behaviors, thus mitigating the practice of refactoring inherent in the application of such a model.
+
+
+\section{Results}
+The results indicate that the model is capable of enhancing the readability of poorly readable and moderately readable code snippets, albeit to a limited extent, offering improvements of up to 5\% at most. Regarding highly readable methods, the model does not yield significant enhancements; in fact, in some cases, a decrease in readability is observed.\newline
+Except for a specific case study where there is no alteration of correctness, the results demonstrate that the model tends to primarily alter the behavior of code for automatic refactoring of poorly readable methods. In the case of moderately readable methods, it is observed that correctness is preserved in 33\% of cases, while in the remaining 67\%, such correctness is compromised. For highly readable methods, the correctness of procedures is usually preserved.
+\section{Thesis Structure and Organization}
+The study is structured into 6 phases (divided into chapters), each addressing different topics. In \capref{Chapter2}, we will explore the state-of-the-art literature, aiming to delineate the overall landscape of the problem and the currently available solutions. In \capref{Chapter3}, we will delve into the approach utilized to conduct this experimental study, while \capref{Chapter4} will discuss the case study and the various outcomes obtained. Subsequently, in \capref{Chapter5}, we will discuss the limitations and factors that may have influenced the validity of this study. Finally, in \capref{Chapter6}, we will present the conclusions and acknowledgments.
